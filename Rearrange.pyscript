@@ -1,0 +1,141 @@
+from enveditor import *
+
+# Acquire sample rate
+SAMPLE_RATE = int(EditorSample.SampleRate)
+
+# Read and make copy of audio
+lst_copy = [[],[]]
+for c in range(2):
+    for i in range(EditorSample.Length):
+        lst_copy[c].append(EditorSample.GetSampleAt(i,c))
+
+# Function for manually adding markers
+def add_markers(bpm: float, division: float):
+    # Acquire the number of samples in each chop
+    chop_width = int((SAMPLE_RATE * 60 * division) // bpm)
+
+    for i in range(0, EditorSample.Length, chop_width):
+        EditorSample.AddRegion('', i, EditorSample.Length - 1)
+
+# Function for adding head and tail markers
+def add_head_tail_markers():
+    # Add regions/markers to beginning and end
+    EditorSample.AddRegion('', 0, 0)
+    EditorSample.AddRegion('', EditorSample.Length - 1, EditorSample.Length - 1)
+
+    # Delete duplicates
+    appeared = []
+    for i in range(EditorSample.RegionCount - 1, -1, -1):   # We need to traverse it backwards since we are potentially delete some elements
+        region = EditorSample.GetRegion(i)
+        if region.SampleStart in appeared:
+            EditorSample.DeleteRegion(i)
+        else:
+            appeared.append(region.SampleStart)
+
+# Function for reordering when markers are present
+def reorder_marker(sort_key, direction):
+    if EditorSample.RegionCount <= 1:
+        # If there's only one region, then no reordering needs to be done
+        return
+
+    add_head_tail_markers()
+
+    # Make regions list
+    regions = [EditorSample.GetRegion(i) for i in range(EditorSample.RegionCount)]
+    
+    # Sort the regions based on there starting positions
+    regions.sort(key=lambda x: x.SampleStart)
+
+    # Append tuples to a list. 
+    # (v, i_s, i_e, region)
+    # Where v is the value of average, i_s is the start index, i_e is the end index, region is the region object
+    order = []
+    for i in range(len(regions) - 1):
+        current_region = regions[i]
+        next_region = regions[i+1]
+        if sort_key == 0:
+            v = compute_peak(current_region.SampleStart, next_region.SampleStart)
+        elif sort_key == 1:
+            v = compute_avg_peak(current_region.SampleStart, next_region.SampleStart)
+        elif sort_key == 2:
+            v = compute_reverse(current_region.SampleStart, next_region.SampleStart)
+        order.append((v, current_region.SampleStart, next_region.SampleStart, current_region))
+
+    # Sort
+    if direction == 0:  # Ascending
+        order.sort()
+    else:               # Descending
+        order.sort(reverse=True)
+
+    # Write the new audio
+    for c in range(2):
+        counter = 0
+        for section in order:
+            _, i_s, i_e, _ = section
+            for i in range(i_s, i_e):
+                EditorSample.SetSampleAt(counter, c, lst_copy[c][i])
+                counter += 1
+
+    # Relocate the regions/markers
+    pos = 0
+    for section in order:
+        _, i_s, i_e, region = section
+        region.SampleStart = pos
+        pos += i_e - i_s
+
+
+def compute_peak(start: int, end: int) -> float:
+    '''Returns the value of the sample with the max absolute value in the given period'''
+    # `start` is the index of the beginning of the section (inclusive)
+    # `end` is the index of the end of the section (exclusive)
+    maxx = 0
+    for c in range(2):
+        for i in range(start, end):
+            if abs(EditorSample.GetSampleAt(i,c)) > maxx:
+                maxx = abs(EditorSample.GetSampleAt(i,c))
+
+    return maxx
+
+def compute_avg_peak(start: int, end: int) -> float:
+    '''Returns the average value of samples in the given period'''
+    # `start` is the index of the beginning of the section (inclusive)
+    # `end` is the index of the end of the section (exclusive)
+    summ = 0
+    for c in range(2):
+        for i in range(start, end):
+            summ += abs(EditorSample.GetSampleAt(i,c))
+
+    return summ / (end - start)
+
+def compute_reverse(start: int, end: int) -> float:
+    '''Returns the reciprocal of the position of the marker'''
+    # `start` is the index of the beginning of the section (inclusive)
+    # `end` is the index of the end of the section (exclusive)
+    return 1 / (start+1)    # Adding one here to prevent division by zero
+
+# Form for scenario with markers
+form_marker=ScriptDialog('Rearrange', 'Rearranges chops of audio according to some rule or priority.')
+form_marker.AddInputCombo('Direction', 'Ascending,Descending', 0)
+form_marker.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
+
+# Form for scenario with no markers
+form_no_marker=ScriptDialog('Rearrange - Add Chops', 'First, define how the audio will be chopped.')
+form_no_marker.AddInputKnob('BPM', 140, 1, 300)
+form_no_marker.AddInputCombo('Division', '1 Bar,2 Beat,1 Beat,1/2 Beat,1/4 Beat,1/8 Beat,1/16 Beat', 2)
+div_lookup = [4, 2, 1, 0.5, 0.25, 0.125, 0.0625]       # Corresponding values for 'Division' input
+
+
+def main():
+    if EditorSample.RegionCount == 0:   # No markers/regions yet
+        if form_no_marker.Execute():
+            bpm = form_no_marker.GetInputValue('BPM')
+            division = div_lookup[int(form_no_marker.GetInputValue('Division'))]
+
+            add_markers(bpm, division)
+        else:
+            return
+
+    if form_marker.Execute():
+        reorder_marker(form_marker.GetInputValue('Sort By'), form_marker.GetInputValue('Direction'))
+
+main()
