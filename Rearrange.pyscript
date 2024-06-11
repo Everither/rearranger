@@ -4,17 +4,17 @@ from enveditor import *
 SAMPLE_RATE = int(EditorSample.SampleRate)
 
 # Read and make copy of audio
-lst_copy = [[],[]]
+audio_buffer = [[],[]]
 for c in range(2):
     for i in range(EditorSample.Length):
-        lst_copy[c].append(EditorSample.GetSampleAt(i,c))
+        audio_buffer[c].append(EditorSample.GetSampleAt(i,c))
 
 # Function for manually adding markers
 def add_markers(bpm: float, division: float):
     # Acquire the number of samples in each chop
-    chop_width = int((SAMPLE_RATE * 60 * division) // bpm)
+    samples_per_chop = int((SAMPLE_RATE * 60 * division) // bpm)
 
-    for i in range(0, EditorSample.Length, chop_width):
+    for i in range(0, EditorSample.Length, samples_per_chop):
         EditorSample.AddRegion('', i, EditorSample.Length - 1)
 
 # Function for adding head and tail markers
@@ -24,13 +24,13 @@ def add_head_tail_markers():
     EditorSample.AddRegion('', EditorSample.Length - 1, EditorSample.Length - 1)
 
     # Delete duplicates
-    appeared = []
+    seen_regions = []
     for i in range(EditorSample.RegionCount - 1, -1, -1):   # We need to traverse it backwards since we are potentially delete some elements
         region = EditorSample.GetRegion(i)
-        if region.SampleStart in appeared:
+        if region.SampleStart in seen_regions:
             EditorSample.DeleteRegion(i)
         else:
-            appeared.append(region.SampleStart)
+            seen_regions.append(region.SampleStart)
 
 # Function for reordering when markers are present
 def reorder_marker(sort_key: int, direction: int, declick: int):
@@ -46,40 +46,43 @@ def reorder_marker(sort_key: int, direction: int, declick: int):
     # Sort the regions based on there starting positions
     regions.sort(key=lambda x: x.SampleStart)
 
-    # Append tuples to a list. 
-    # (v, i_s, i_e, region)
-    # Where v is the value of average, i_s is the start index, i_e is the end index, region is the region object
-    order = []
+    # Append tuples to a list
+    # (comparison_value, i_s, i_e, region)
+    # Where comparison_value is the value of average, i_s is the start index, i_e is the end index, region is the region object
+    region_order = []
     for i in range(len(regions) - 1):
         current_region = regions[i]
         next_region = regions[i+1]
+        
+        # Choose sort mode
         if sort_key == 0:
-            v = compute_peak(current_region.SampleStart, next_region.SampleStart)
+            comparison_value = compute_peak(current_region.SampleStart, next_region.SampleStart)
         elif sort_key == 1:
-            v = compute_avg_peak(current_region.SampleStart, next_region.SampleStart)
+            comparison_value = compute_avg_peak(current_region.SampleStart, next_region.SampleStart)
         elif sort_key == 2:
-            v = compute_reverse(current_region.SampleStart, next_region.SampleStart)
-        order.append((v, current_region.SampleStart, next_region.SampleStart, current_region))
+            comparison_value = compute_reverse(current_region.SampleStart, next_region.SampleStart)
+
+        region_order.append((comparison_value, current_region.SampleStart, next_region.SampleStart, current_region))
 
     # Sort
     if direction == 0:  # Ascending
-        order.sort()
+        region_order.sort()
     else:               # Descending
-        order.sort(reverse=True)
+        region_order.sort(reverse=True)
 
     # Write the new audio
     for c in range(2):
         counter = 0
-        for section in order:
+        for section in region_order:
             _, i_s, i_e, _ = section
             # Declick Head
             if i_s-declick > 0:  
                 for i in range(declick):
-                    EditorSample.SetSampleAt(counter-declick+i, c, EditorSample.GetSampleAt(counter-declick+i, c) + (lst_copy[c][i_s-declick+i] * i/declick))
+                    EditorSample.SetSampleAt(counter-declick+i, c, EditorSample.GetSampleAt(counter-declick+i, c) + (audio_buffer[c][i_s-declick+i] * i/declick))
 
             # Main audio
             for i in range(i_s, i_e):
-                EditorSample.SetSampleAt(counter, c, lst_copy[c][i])
+                EditorSample.SetSampleAt(counter, c, audio_buffer[c][i])
                 counter += 1
 
             # Declick Tail
@@ -89,11 +92,12 @@ def reorder_marker(sort_key: int, direction: int, declick: int):
 
     # Relocate the regions/markers
     pos = 0
-    for section in order:
+    for section in region_order:
         _, i_s, i_e, region = section
         region.SampleStart = pos
         pos += i_e - i_s
 
+# ---------------------- Sort Modes ----------------------
 
 def compute_peak(start: int, end: int) -> float:
     '''Returns the value of the sample with the max absolute value in the given period'''
@@ -124,30 +128,38 @@ def compute_reverse(start: int, end: int) -> float:
     # `end` is the index of the end of the section (exclusive)
     return 1 / (start+1)    # Adding one here to prevent division by zero
 
+# --------------------------------------------------------
+
 # Form for scenario with markers
-form_marker=ScriptDialog('Rearrange', 'Rearranges chops of audio according to some rule or priority.')
-form_marker.AddInputCombo('Direction', 'Ascending,Descending', 0)
-form_marker.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
-form_marker.AddInputKnob('Declick', 20, 1, 1000)
+form_with_markers=ScriptDialog('Rearrange', 'Rearranges chops of audio according to a chosen rule or priority.')
+form_with_markers.AddInputCombo('Direction', 'Ascending,Descending', 0)
+form_with_markers.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
+form_with_markers.AddInputKnob('Declick', 20, 1, 1000)
+form_with_markers.AddInputCombo('Delete Markers', 'No,Yes', 0)
 
 # Form for scenario with no markers
-form_no_marker=ScriptDialog('Rearrange - Add Chops', 'First, define how the audio will be chopped.')
-form_no_marker.AddInputKnob('BPM', 140, 1, 300)
-form_no_marker.AddInputCombo('Division', '1 Bar,2 Beat,1 Beat,1/2 Beat,1/4 Beat,1/8 Beat,1/16 Beat', 2)
-div_lookup = [4, 2, 1, 0.5, 0.25, 0.125, 0.0625]       # Corresponding values for 'Division' input
+form_without_markers=ScriptDialog('Rearrange - Add Chops', 'First, define how the audio will be chopped.')
+form_without_markers.AddInputKnob('BPM', 140, 1, 300)
+form_without_markers.AddInputCombo('Division', '1 Bar,2 Beat,1 Beat,1/2 Beat,1/4 Beat,1/8 Beat,1/16 Beat', 2)
+division_values = [4, 2, 1, 0.5, 0.25, 0.125, 0.0625]       # Corresponding values for 'Division' input
 
 
 def main():
     if EditorSample.RegionCount == 0:   # No markers/regions yet
-        if form_no_marker.Execute():
-            bpm = form_no_marker.GetInputValue('BPM')
-            division = div_lookup[int(form_no_marker.GetInputValue('Division'))]
+        if form_without_markers.Execute():
+            bpm = form_without_markers.GetInputValue('BPM')
+            division = division_values[int(form_without_markers.GetInputValue('Division'))]
 
             add_markers(bpm, division)
         else:
             return
 
-    if form_marker.Execute():
-        reorder_marker(form_marker.GetInputValue('Sort By'), form_marker.GetInputValue('Direction'), int(form_marker.GetInputValue('Declick')))
+    if form_with_markers.Execute():
+        reorder_marker(form_with_markers.GetInputValue('Sort By'), form_with_markers.GetInputValue('Direction'), int(form_with_markers.GetInputValue('Declick')))
+
+        # Delete all regions/markers
+        if form_with_markers.GetInputValue('Delete Markers') == 1:
+            for _ in range(EditorSample.RegionCount):
+                EditorSample.DeleteRegion(0)
 
 main()
