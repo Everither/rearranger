@@ -33,7 +33,7 @@ def add_head_tail_markers():
             appeared.append(region.SampleStart)
 
 # Function for reordering when markers are present
-def reorder_marker(sort_key, direction):
+def reorder_marker(sort_key: int, direction: int, declick: int):
     if EditorSample.RegionCount <= 1:
         # If there's only one region, then no reordering needs to be done
         return
@@ -72,9 +72,20 @@ def reorder_marker(sort_key, direction):
         counter = 0
         for section in order:
             _, i_s, i_e, _ = section
+            # Declick Head
+            if i_s-declick > 0:  
+                for i in range(declick):
+                    EditorSample.SetSampleAt(counter-declick+i, c, EditorSample.GetSampleAt(counter-declick+i, c) + (lst_copy[c][i_s-declick+i] * i/declick))
+
+            # Main audio
             for i in range(i_s, i_e):
                 EditorSample.SetSampleAt(counter, c, lst_copy[c][i])
                 counter += 1
+
+            # Declick Tail
+            if counter-declick+i > 0:
+                for i in range(declick):
+                    EditorSample.SetSampleAt(counter-declick+i, c, EditorSample.GetSampleAt(counter-declick+i, c) * (declick-i)/declick)
 
     # Relocate the regions/markers
     pos = 0
@@ -117,6 +128,7 @@ def compute_reverse(start: int, end: int) -> float:
 form_marker=ScriptDialog('Rearrange', 'Rearranges chops of audio according to some rule or priority.')
 form_marker.AddInputCombo('Direction', 'Ascending,Descending', 0)
 form_marker.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
+form_marker.AddInputKnob('Declick', 20, 1, 1000)
 
 # Form for scenario with no markers
 form_no_marker=ScriptDialog('Rearrange - Add Chops', 'First, define how the audio will be chopped.')
@@ -136,6 +148,6 @@ def main():
             return
 
     if form_marker.Execute():
-        reorder_marker(form_marker.GetInputValue('Sort By'), form_marker.GetInputValue('Direction'))
+        reorder_marker(form_marker.GetInputValue('Sort By'), form_marker.GetInputValue('Direction'), int(form_marker.GetInputValue('Declick')))
 
 main()
