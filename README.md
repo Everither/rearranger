@@ -1,6 +1,7 @@
 # Rearranger
  FL Studio Edison Audio Script which chops and rearranges audio based on peak and average loudness.
 
+## Parameters - Add Markers
  
 `BPM` Tempo for chopping audio. 
 
@@ -10,6 +11,7 @@
 
 `Seed` Seed for pseudorandom generation.
 
+## Parameters - Rearrange
 
 `Direction` Ascending or descending order for arranging regions. 
 
