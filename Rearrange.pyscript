@@ -134,7 +134,7 @@ def compute_reverse(start: int, end: int) -> float:
 # --------------------------------------------------------
 
 # Form for scenario with markers
-form_with_markers=ScriptDialog('Rearrange', 'Rearranges the audio based on: \r`Direction` - Ascending or descending order for arranging regions. \r`Sort By` - Criterion for sorting: Peak, Average Peak, or Reverse. \r`Declick - Fade duration of the beginning and end of each chop.\r`Delete Markers - Option to keep or delete markers.')
+form_with_markers=ScriptDialog('Rearrange', 'Rearranges the audio based on: \r`Direction` - Ascending or descending order for arranging regions. \r`Sort By` - Criterion for sorting: Peak, Average Peak, or Reverse. \r`Declick` - Fade duration of the beginning and end of each chop.\r`Delete Markers` - Option to keep or delete markers.')
 form_with_markers.AddInputCombo('Direction', 'Ascending,Descending', 0)
 form_with_markers.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
 form_with_markers.AddInputKnob('Declick', 20, 1, 1000)
