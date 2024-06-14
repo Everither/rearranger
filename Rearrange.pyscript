@@ -1,5 +1,13 @@
 from enveditor import *
 
+class PseudoRandom:
+    def __init__(self, seed):
+        self.seed = seed
+
+    def random(self):
+        self.seed = (self.seed * 1664525 + 1013904223) % 2**32
+        return self.seed / 2**32
+
 # Acquire sample rate
 SAMPLE_RATE = int(EditorSample.SampleRate)
 
@@ -10,12 +18,13 @@ for c in range(2):
         audio_buffer[c].append(EditorSample.GetSampleAt(i,c))
 
 # Function for manually adding markers
-def add_markers(bpm: float, division: float):
+def add_markers(bpm: float, division: float, pseudorandom: PseudoRandom, noise: float):
     # Acquire the number of samples in each chop
     samples_per_chop = int((SAMPLE_RATE * 60 * division) // bpm)
 
     for i in range(0, EditorSample.Length, samples_per_chop):
-        EditorSample.AddRegion('', i, EditorSample.Length - 1)
+        pos = int((i + pseudorandom.random() * noise * EditorSample.Length) % EditorSample.Length)   # Optionally adding some noise to the positions of markers
+        EditorSample.AddRegion('', pos, EditorSample.Length - 1)
 
 # Function for adding head and tail markers
 def add_head_tail_markers():
@@ -100,9 +109,7 @@ def reorder_marker(sort_key: int, direction: int, declick: int):
 # ---------------------- Sort Modes ----------------------
 
 def compute_peak(start: int, end: int) -> float:
-    '''Returns the value of the sample with the max absolute value in the given period'''
-    # `start` is the index of the beginning of the section (inclusive)
-    # `end` is the index of the end of the section (exclusive)
+    '''Returns the value of the sample with the max absolute value in the given period (start inclusive, end exclusive)'''
     maxx = 0
     for c in range(2):
         for i in range(start, end):
@@ -112,9 +119,7 @@ def compute_peak(start: int, end: int) -> float:
     return maxx
 
 def compute_avg_peak(start: int, end: int) -> float:
-    '''Returns the average value of samples in the given period'''
-    # `start` is the index of the beginning of the section (inclusive)
-    # `end` is the index of the end of the section (exclusive)
+    '''Returns the average value of samples in the given period (start inclusive, end exclusive)'''
     summ = 0
     for c in range(2):
         for i in range(start, end):
@@ -123,39 +128,50 @@ def compute_avg_peak(start: int, end: int) -> float:
     return summ / (end - start)
 
 def compute_reverse(start: int, end: int) -> float:
-    '''Returns the reciprocal of the position of the marker'''
-    # `start` is the index of the beginning of the section (inclusive)
-    # `end` is the index of the end of the section (exclusive)
+    '''Returns the reciprocal of the position of the marker (start inclusive, end exclusive)'''
     return 1 / (start+1)    # Adding one here to prevent division by zero
 
 # --------------------------------------------------------
 
 # Form for scenario with markers
-form_with_markers=ScriptDialog('Rearrange', 'Rearranges chops of audio according to a chosen rule or priority.')
+form_with_markers=ScriptDialog('Rearrange', 'Rearranges the audio based on: \r`Direction` - Ascending or descending order for arranging regions. \r`Sort By` - Criterion for sorting: Peak, Average Peak, or Reverse. \r`Declick - Fade duration of the beginning and end of each chop.\r`Delete Markers - Option to keep or delete markers.')
 form_with_markers.AddInputCombo('Direction', 'Ascending,Descending', 0)
 form_with_markers.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
 form_with_markers.AddInputKnob('Declick', 20, 1, 1000)
 form_with_markers.AddInputCombo('Delete Markers', 'No,Yes', 0)
 
 # Form for scenario with no markers
-form_without_markers=ScriptDialog('Rearrange - Add Chops', 'First, define how the audio will be chopped.')
+form_without_markers=ScriptDialog('Rearrange - Add Markers', 'Chops the audio based on: \r`BPM` - Tempo for chopping audio. \r`Division` - Length of each region in musical time. \r`Noise` - Random offset for marker placement. \r`Seed` - Seed for pseudorandom generation.')
 form_without_markers.AddInputKnob('BPM', 140, 1, 300)
 form_without_markers.AddInputCombo('Division', '1 Bar,2 Beat,1 Beat,1/2 Beat,1/4 Beat,1/8 Beat,1/16 Beat', 2)
 division_values = [4, 2, 1, 0.5, 0.25, 0.125, 0.0625]       # Corresponding values for 'Division' input
+form_without_markers.AddInputKnob('Noise', 0, 0, 1)
+form_without_markers.AddInputKnob('Seed', 1, 1, 1000)
 
 
 def main():
     if EditorSample.RegionCount == 0:   # No markers/regions yet
         if form_without_markers.Execute():
+
             bpm = form_without_markers.GetInputValue('BPM')
             division = division_values[int(form_without_markers.GetInputValue('Division'))]
+            noise = form_without_markers.GetInputValue('Noise')
+            seed = form_without_markers.GetInputValue('Seed')
 
-            add_markers(bpm, division)
+            pseudorandom = PseudoRandom(seed)
+
+            add_markers(bpm, division, pseudorandom, noise)
+
         else:
             return
 
     if form_with_markers.Execute():
-        reorder_marker(form_with_markers.GetInputValue('Sort By'), form_with_markers.GetInputValue('Direction'), int(form_with_markers.GetInputValue('Declick')))
+
+        sort_key = form_with_markers.GetInputValue('Sort By')
+        direction = form_with_markers.GetInputValue('Direction')
+        declick = int(form_with_markers.GetInputValue('Declick'))
+
+        reorder_marker(sort_key, direction, declick)
 
         # Delete all regions/markers
         if form_with_markers.GetInputValue('Delete Markers') == 1:
