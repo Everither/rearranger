@@ -1,6 +1,14 @@
 # Rearranger
  FL Studio Edison Audio Script which chops and rearranges audio based on peak and average loudness.
 
+
+![Rearrange - Add Markers](https://github.com/Everither/rearranger/assets/122586326/af03990c-1ce0-4baa-87f2-b5b4baecd29b)
+
+
+![Rearrange - Rearrange](https://github.com/Everither/rearranger/assets/122586326/a22d78ae-655f-4365-a8be-88613d94d717)
+
+ 
+
 ## Parameters - Add Markers
  
 `BPM` Tempo for chopping audio. 
