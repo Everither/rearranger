@@ -29,10 +29,12 @@
 
 `Delete Markers` Option to keep or delete markers.
 
-# Example
+## Example 1 - No Markers In Original Audio
 
 
 ![Rearrange Before](https://github.com/Everither/rearranger/assets/122586326/91074f85-c6f7-4c62-a4f1-8f3c9ccecf21)
+
+https://github.com/Everither/rearranger/assets/122586326/debb6648-9bb5-4d00-b791-a201c974c966
 
 
 Before
