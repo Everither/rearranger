@@ -24,13 +24,13 @@ def add_markers(bpm: float, division: float, pseudorandom: PseudoRandom, noise: 
 
     for i in range(0, EditorSample.Length, samples_per_chop):
         pos = int((i + pseudorandom.random() * noise * EditorSample.Length) % EditorSample.Length)   # Optionally adding some noise to the positions of markers
-        EditorSample.AddRegion('', pos, EditorSample.Length - 1)
+        EditorSample.AddRegion('', pos)
 
 # Function for adding head and tail markers
 def add_head_tail_markers():
-    # Add regions/markers to beginning and end
-    EditorSample.AddRegion('', 0, 0)
-    EditorSample.AddRegion('', EditorSample.Length - 1, EditorSample.Length - 1)
+    # Add /markers to beginning and end
+    EditorSample.AddRegion('', 0)
+    EditorSample.AddRegion('', EditorSample.Length - 1)
 
     # Delete duplicates
     seen_regions = []
@@ -44,7 +44,7 @@ def add_head_tail_markers():
 # Function for reordering when markers are present
 def reorder_marker(sort_key: int, direction: int, declick: int):
     if EditorSample.RegionCount <= 1:
-        # If there's only one region, then no reordering needs to be done
+        # If there's only one marker, then no reordering needs to be done
         return
 
     add_head_tail_markers()
@@ -99,7 +99,7 @@ def reorder_marker(sort_key: int, direction: int, declick: int):
                 for i in range(declick):
                     EditorSample.SetSampleAt(counter-declick+i, c, EditorSample.GetSampleAt(counter-declick+i, c) * (declick-i)/declick)
 
-    # Relocate the regions/markers
+    # Relocate the markers
     pos = 0
     for section in region_order:
         _, i_s, i_e, region = section
@@ -134,7 +134,7 @@ def compute_reverse(start: int, end: int) -> float:
 # --------------------------------------------------------
 
 # Form for scenario with markers
-form_with_markers=ScriptDialog('Rearrange', 'Rearranges the audio based on: \r`Direction` - Ascending or descending order for arranging regions. \r`Sort By` - Criterion for sorting: Peak, Average Peak, or Reverse. \r`Declick` - Fade duration of the beginning and end of each chop.\r`Delete Markers` - Option to keep or delete markers.')
+form_with_markers=ScriptDialog('Rearrange - Rearrange', 'Rearranges the audio based on: \r`Direction` - Ascending or descending order for arranging regions. \r`Sort By` - Criterion for sorting: Peak, Average Peak, or Reverse. \r`Declick` - Fade duration of the beginning and end of each chop.\r`Delete Markers` - Option to keep or delete markers.')
 form_with_markers.AddInputCombo('Direction', 'Ascending,Descending', 0)
 form_with_markers.AddInputCombo('Sort By', 'Peak,Average Peak,Reverse', 0)
 form_with_markers.AddInputKnob('Declick', 20, 1, 1000)
@@ -150,7 +150,7 @@ form_without_markers.AddInputKnob('Seed', 1, 1, 1000)
 
 
 def main():
-    if EditorSample.RegionCount == 0:   # No markers/regions yet
+    if EditorSample.RegionCount == 0:   # No markers yet
         if form_without_markers.Execute():
 
             bpm = form_without_markers.GetInputValue('BPM')
@@ -173,7 +173,7 @@ def main():
 
         reorder_marker(sort_key, direction, declick)
 
-        # Delete all regions/markers
+        # Delete all markers
         if form_with_markers.GetInputValue('Delete Markers') == 1:
             for _ in range(EditorSample.RegionCount):
                 EditorSample.DeleteRegion(0)
