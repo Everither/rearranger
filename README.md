@@ -31,10 +31,16 @@
 
 # Example
 
-Before
+
 ![Rearrange Before](https://github.com/Everither/rearranger/assets/122586326/91074f85-c6f7-4c62-a4f1-8f3c9ccecf21)
 
 
-After
+Before
+
+
+
+
 ![Rearrange After](https://github.com/Everither/rearranger/assets/122586326/fef9c90e-2c7f-4f7a-8cc7-b1e0d0201963)
 
+
+After
