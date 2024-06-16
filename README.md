@@ -32,17 +32,7 @@
 ## Example 1 - No Markers In Original Audio
 
 
-![Rearrange Before](https://github.com/Everither/rearranger/assets/122586326/91074f85-c6f7-4c62-a4f1-8f3c9ccecf21)
 
-https://github.com/Everither/rearranger/assets/122586326/debb6648-9bb5-4d00-b791-a201c974c966
-
-
-Before
+https://github.com/Everither/rearranger/assets/122586326/1e5203aa-1518-471f-bd77-13f29780984a
 
 
-
-
-![Rearrange After](https://github.com/Everither/rearranger/assets/122586326/fef9c90e-2c7f-4f7a-8cc7-b1e0d0201963)
-
-
-After
