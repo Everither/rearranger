@@ -7,6 +7,7 @@
 
 ![Rearrange - Rearrange](https://github.com/Everither/rearranger/assets/122586326/a22d78ae-655f-4365-a8be-88613d94d717)
 
+For further information, please visit the official [FL Studio Edison Script Reference.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/editortool_run.htm)
  
 
 ## Parameters - Add Markers
