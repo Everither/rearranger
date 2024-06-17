@@ -7,6 +7,8 @@
 
 ![Rearrange - Rearrange](https://github.com/Everither/rearranger/assets/122586326/a22d78ae-655f-4365-a8be-88613d94d717)
 
+
+
 ## Installation
 
 Place `Rearrange.pyscript` inside `...\Documents\Image-Line\FL Studio\Settings\Audio scripts`
@@ -35,6 +37,8 @@ For further information, please visit the official [FL Studio Edison Script Refe
 `Declick` Fade duration of the beginning and end of each chop.
 
 `Delete Markers` Option to keep or delete markers.
+
+
 
 ## Example 1 - No Markers In Original Audio
 
