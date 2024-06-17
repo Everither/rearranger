@@ -15,7 +15,7 @@ Copy `Rearrange.pyscript`  into your Edison Scripts folder: `...\Documents\Image
 
 Run the script inside Edison by using `Tools` > `Run script` > `Rearrange`
 
-For further information, please visit the official [FL Studio Edison Script Reference.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/editortool_run.htm)
+For further information, please visit the official [FL Studio Edison Script Reference](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/editortool_run.htm)
  
 
 ## Parameters - Add Markers
