@@ -7,6 +7,12 @@
 
 ![Rearrange - Rearrange](https://github.com/Everither/rearranger/assets/122586326/a22d78ae-655f-4365-a8be-88613d94d717)
 
+## Installation
+
+Place `Rearrange.pyscript` inside `...\Documents\Image-Line\FL Studio\Settings\Audio scripts`.
+
+Run the script by opening Edison, go to `Tools` > `Run script` > `Rearrange`
+
 For further information, please visit the official [FL Studio Edison Script Reference.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/editortool_run.htm)
  
 
