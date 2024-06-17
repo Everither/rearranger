@@ -9,7 +9,7 @@
 
 ## Installation
 
-Place `Rearrange.pyscript` inside `...\Documents\Image-Line\FL Studio\Settings\Audio scripts`.
+Place `Rearrange.pyscript` inside `...\Documents\Image-Line\FL Studio\Settings\Audio scripts`
 
 Run the script by opening Edison, go to `Tools` > `Run script` > `Rearrange`
 
