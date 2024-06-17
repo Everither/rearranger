@@ -38,8 +38,12 @@ For further information, please visit the official [FL Studio Edison Script Refe
 
 ## Example 1 - No Markers In Original Audio
 
-https://github.com/Everither/rearranger/assets/122586326/1b39bbb8-ddb7-4304-8a18-ce3bf85d861c
+https://github.com/Everither/rearranger/assets/122586326/4d6b033a-0216-46d4-8736-ad9ee26d68f5
 
 ## Example 2 - Custom Markers In Original Audio
 
+https://github.com/Everither/rearranger/assets/122586326/a8fb1f13-1366-48bf-9914-3cec542a42be
+
 ## Example 3 - Randomised Chopping
+
+https://github.com/Everither/rearranger/assets/122586326/edb01f12-0c24-4eda-bf55-6c819abe2d0d
