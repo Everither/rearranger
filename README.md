@@ -11,9 +11,9 @@
 
 ## Installation
 
-Place `Rearrange.pyscript` inside `...\Documents\Image-Line\FL Studio\Settings\Audio scripts`
+Copy `Rearrange.pyscript`  into your Edison Scripts folder: `...\Documents\Image-Line\FL Studio\Settings\Audio scripts`
 
-Run the script by opening Edison, go to `Tools` > `Run script` > `Rearrange`
+Run the script inside Edison by using `Tools` > `Run script` > `Rearrange`
 
 For further information, please visit the official [FL Studio Edison Script Reference.](https://www.image-line.com/fl-studio-learning/fl-studio-online-manual/html/plugins/editortool_run.htm)
  
