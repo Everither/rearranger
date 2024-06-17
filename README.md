@@ -1,5 +1,5 @@
 # Rearranger
- FL Studio Edison Audio Script which chops and performs sorting on any given audio sample.
+ FL Studio Edison Audio Script which performs chopping and sorting on any given audio sample.
 
 
 ![Rearrange - Add Markers](https://github.com/Everither/rearranger/assets/122586326/af03990c-1ce0-4baa-87f2-b5b4baecd29b)
